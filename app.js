@@ -83,7 +83,14 @@ async function checkVotingStatusAndProceed() {
         showToast("Error de conexión ❌");
         console.error(e);
         // FALLBACK PARA DEMO SI NO HAY API
-        loadMockData();
+        console.warn("Usando datos Mock por fallo de API");
+        const mock = mockGet();
+        if (mock) {
+            availableOptions = mock.options;
+            renderOptions();
+            ui.displayUsername.innerText = currentUser + " (OFFLINE)";
+            showView('voting');
+        }
     }
 }
 
@@ -230,6 +237,25 @@ function initAdmin() {
         window.open(API_URL + "?export=counts", '_blank');
         showToast("Generando CSV...");
     };
+
+    // --- NUEVO: Logica para añadir opciones ---
+    const inputAdd = document.getElementById('new-option-input');
+    const btnAdd = document.getElementById('btn-add-option');
+
+    const handleAddOption = async () => {
+        const name = inputAdd.value.trim();
+        if (!name) return;
+
+        inputAdd.value = ''; // Limpiar
+        await sendAPI({ action: 'add_option', name: name });
+        showToast("Opción añadida ✅");
+        // Refrescar lista (opcional, o esperar al reload)
+    };
+
+    btnAdd.onclick = handleAddOption;
+    inputAdd.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') handleAddOption();
+    });
 }
 
 
