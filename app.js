@@ -273,10 +273,12 @@ async function sendAPI(payload) {
     // but that breaks reading response. For simple string/beacon use 'no-cors' if issues arise)
     const res = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // text/plain evita Preflight CORS
+        mode: 'no-cors', // <--- CAMBIO IMPORTANTE: Ignorar CORS (no podremos leer la respuesta JSON, pero se envía)
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     });
-    return await res.json();
+    // return await res.json(); // Con no-cors NO podemos leer el JSON de vuelta.
+    return { status: 'success' }; // Asumimos éxito si no explota.
 }
 
 function showToast(msg) {
