@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Votación En Vivo</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js for Graphs -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Supabase SDK -->
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <!-- Header -->
+        <header>
+            <h1>VOTACIÓN <span class="highlight">2025</span></h1>
+        </header>
+
+        <!-- VIEW: LOGIN -->
+        <section id="view-login" class="view active">
+            <div class="card glass">
+                <h2>¡Hola! 👋</h2>
+                <p>Introduce tu nombre para entrar</p>
+                <input type="text" id="username-input" placeholder="Tu nombre..." autocomplete="off">
+                <button id="btn-login" class="btn-primary">ENTRAR</button>
+            </div>
+        </section>
+
+        <!-- VIEW: VOTING AREA -->
+        <section id="view-voting" class="view hidden">
+            <div class="info-banner glass">
+                <p>Hola <span id="display-username" class="user-highlight"></span>, elige <strong>3 opciones</strong>:</p>
+                <div class="counter"><span id="selected-count">0</span> / 3</div>
+            </div>
+
+            <div id="options-list" class="options-grid">
+                <!-- Options will be injected here via JS -->
+                 <div class="loading-spinner">Cargando opciones...</div>
+            </div>
+
+            <div class="action-dock glass">
+                <button id="btn-submit-vote" class="btn-primary" disabled>VOTAR AHORA 🚀</button>
+            </div>
+        </section>
+
+        <!-- VIEW: RESULTS -->
+        <section id="view-results" class="view hidden">
+            <div class="card glass">
+                <h2>Resultados en Vivo 📊</h2>
+                <div class="chart-container">
+                    <canvas id="resultsChart"></canvas>
+                </div>
+                <div id="total-votes-display" class="total-badge">0 Votos Totales</div>
+            </div>
+            
+            <!-- Only visible if admin is logged in (handled by JS logic, but markup is here) -->
+            <button id="btn-admin-back" class="btn-secondary hidden" style="margin-top: 20px;">Volver al Panel</button>
+        </section>
+
+        <!-- VIEW: ADMIN DASHBOARD -->
+        <section id="view-admin" class="view hidden">
+            <div class="admin-nav glass">
+                <button class="tab-btn active" data-tab="tab-vote">Votar / Ver</button>
+                <button class="tab-btn" data-tab="tab-config">Configuración</button>
+                <button class="tab-btn logout" id="btn-logout-admin">Salir</button>
+            </div>
+
+            <!-- Tab: Votar (Simula la vista de usuario pero con extras) -->
+            <div id="tab-vote" class="admin-tab active">
+                <div class="admin-controls glass">
+                   <h3>Panel de Control</h3>
+                   <div class="button-group">
+                       <button id="btn-export-counts" class="btn-small">📄 CSV (Resultados)</button>
+                       <button id="btn-export-details" class="btn-small">📑 CSV (Detallado)</button>
+                   </div>
+                   <button id="btn-go-to-voting" class="btn-secondary">Ir a Pantalla de Votación</button>
+                </div>
+            </div>
+
+            <!-- Tab: Configuración -->
+            <div id="tab-config" class="admin-tab hidden">
+                <div class="card glass danger-zone">
+                    <h3>Zona de Peligro</h3>
+                    <button id="btn-close-voting" class="btn-danger">🔒 Cerrar Votaciones</button>
+                    <button id="btn-open-voting" class="btn-success hidden">🔓 Abrir Votaciones</button>
+                    <button id="btn-reset-votes" class="btn-danger-outline">⚠️ Resetear Todo (0 Votos)</button>
+                </div>
+
+                <div class="card glass">
+                    <h3>Gestionar Opciones</h3>
+                    <div class="add-option-row">
+                        <input type="text" id="new-option-input" placeholder="Nueva opción...">
+                        <button id="btn-add-option" class="btn-secondary">+</button>
+                    </div>
+                    <ul id="admin-options-list" class="manage-list">
+                        <!-- Admin options list -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: CLOSED -->
+        <section id="view-closed" class="view hidden">
+            <div class="card glass">
+                <h2>⛔ Votación Cerrada</h2>
+                <p>El administrador ha cerrado las votaciones.</p>
+                <button id="btn-view-results-anyway" class="btn-secondary">Ver Resultados Finales</button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">Mensaje</div>
+
+    <script src="app.js"></script>
+</body>
+</html>
