@@ -1,33 +1,25 @@
-// CÓDIGO GOOGLE APPS SCRIPT
+// CÓDIGO GOOGLE APPS SCRIPT (VERSIÓN 2 - ANTI-ERRORES)
 // -------------------------------------------------------------
-// 1. Ve a tu Hoja de Cálculo de Google.
-// 2. Click en: Extensiones > Apps Script.
-// 3. Borra todo lo que salga y pega este código.
-// 4. Dale a "Guardar" y luego a "Implantar" (Deploy) > "Nueva implementación".
-// 5. Configura:
-//      - Tipo: Aplicación web
-//      - Ejecutar como: "Yo"
-//      - Quién tiene acceso: "Cualquier persona" (IMPORTANTE)
-// 6. Copia la URL que te da (termina en /exec) y pégala en tu web.
+// 1. Ve a Extensiones > Apps Script.
+// 2. BORRA TODO y pega este código nuevo.
+// 3. Dale a Guardar.
+// 4. IMPORTANTE: Dale a "Implantar" > "Nueva implementación" (OBLIGATORIO crear nueva para que se actualice).
+// 5. Copia la nueva URL si cambia, o asegúrate de que es la misma.
 // -------------------------------------------------------------
 
-// CONFIGURACIÓN INICIAL
-// Al ejecutar la función 'setup()', se crearán las hojas necesarias
 function setup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   createSheetIfNeeded(ss, 'Config', ['Key', 'Value']);
   createSheetIfNeeded(ss, 'Opciones', ['ID', 'Nombre', 'Activo']);
   createSheetIfNeeded(ss, 'Votos', ['Fecha', 'Usuario', 'Opciones']);
-  
-  // Configuración por defecto
-  setVal('Config', 'voting_open', 'true');
-  
-  // Opciones por defecto si está vacío
+
+  // Defaults
+  if (getVal(ss, 'Config', 'voting_open') === null) setVal(ss, 'Config', 'voting_open', 'true');
+
   const optSheet = ss.getSheetByName('Opciones');
   if (optSheet.getLastRow() === 1) {
-    optSheet.appendRow([1, 'Opción Ejemplo 1', true]);
-    optSheet.appendRow([2, 'Opción Ejemplo 2', true]);
-    optSheet.appendRow([3, 'Opción Ejemplo 3', true]);
+    optSheet.appendRow([1, 'Opción A (Ejemplo)', true]);
+    optSheet.appendRow([2, 'Opción B (Ejemplo)', true]);
   }
 }
 
@@ -37,10 +29,22 @@ function createSheetIfNeeded(ss, name, headers) {
     sheet = ss.insertSheet(name);
     sheet.appendRow(headers);
   }
+  return sheet;
 }
 
-function setVal(sheetName, key, value) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+function getVal(ss, sheetName, key) {
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return null;
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] == key) return data[i][1];
+  }
+  return null;
+}
+
+function setVal(ss, sheetName, key, value) {
+  let sheet = ss.getSheetByName(sheetName);
+  if (!sheet) sheet = createSheetIfNeeded(ss, sheetName, ['Key', 'Value']);
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] == key) {
@@ -51,106 +55,100 @@ function setVal(sheetName, key, value) {
   sheet.appendRow([key, value]);
 }
 
-// API: MANEJO DE GET (Leer datos)
+// --- API ---
+
 function doGet(e) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  
-  // 1. Leer estado de la votación
-  const configSheet = ss.getSheetByName('Config');
-  const configData = configSheet.getDataRange().getValues();
-  let open = 'true';
-  configData.forEach(row => { if(row[0] === 'voting_open') open = row[1] });
-  
-  // 2. Leer Opciones
-  const optSheet = ss.getSheetByName('Opciones');
-  const optData = optSheet.getDataRange().getValues();
-  let options = [];
-  // Empezamos en 1 para saltar cabecera
-  for (let i = 1; i < optData.length; i++) {
-    if (optData[i][2] === true || optData[i][2] === 'true') {
-      options.push({ id: optData[i][0], name: optData[i][1] });
-    }
-  }
+  // WRAPPER DE SEGURIDAD: Cualquier error devolverá JSON, no HTML
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  // 3. Leer Resultados (Contar votos)
-  const voteSheet = ss.getSheetByName('Votos');
-  const voteData = voteSheet.getDataRange().getValues();
-  let counts = {};
-  
-  // Inicializar conteo
-  options.forEach(o => counts[o.name] = 0);
-  
-  // Contar (saltando cabecera)
-  for (let i = 1; i < voteData.length; i++) {
-    const choices = String(voteData[i][2]).split(','); // "Opción A,Opción B,..."
-    choices.forEach(choice => {
-      let trimmed = choice.trim();
-      if (counts[trimmed] !== undefined) {
-        counts[trimmed]++;
+    // Auto-reparación: Si no existen las hojas, crearlas al vuelo
+    if (!ss.getSheetByName('Config')) setup();
+
+    // 1. Leer Config
+    const open = getVal(ss, 'Config', 'voting_open');
+
+    // 2. Leer Opciones
+    const optSheet = ss.getSheetByName('Opciones');
+    const optData = optSheet ? optSheet.getDataRange().getValues() : [];
+    let options = [];
+    for (let i = 1; i < optData.length; i++) {
+      if (optData[i][2] === true || optData[i][2] === 'true') {
+        options.push({ id: optData[i][0], name: optData[i][1] });
       }
-    });
-  }
+    }
 
-  return responseJSON({
-    status: 'success',
-    voting_open: open === 'true' || open === true,
-    options: options,
-    results: counts,
-    total_votes: voteData.length - 1
-  });
+    // 3. Contar Votos
+    const voteSheet = ss.getSheetByName('Votos');
+    const voteData = voteSheet ? voteSheet.getDataRange().getValues() : [];
+    let counts = {};
+    options.forEach(o => counts[o.name] = 0);
+
+    for (let i = 1; i < voteData.length; i++) {
+      const choices = String(voteData[i][2]).split(',');
+      choices.forEach(c => {
+        let t = c.trim();
+        if (counts[t] !== undefined) counts[t]++;
+      });
+    }
+
+    return responseJSON({
+      status: 'success',
+      voting_open: (open === 'true' || open === true),
+      options: options,
+      results: counts,
+      total_votes: Math.max(0, voteData.length - 1)
+    });
+
+  } catch (err) {
+    // ESTO EVITA EL ERROR CORS: Devuelve JSON incluso si falla
+    return responseJSON({ status: 'error', message: err.toString() });
+  }
 }
 
-// API: MANEJO DE POST (Acciones: Votar, Admin)
 function doPost(e) {
   try {
+    // Si no viene postData, es un error
+    if (!e || !e.postData) return responseJSON({ status: 'error', message: 'No post data' });
+
     const data = JSON.parse(e.postData.contents);
     const action = data.action;
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    if (!ss.getSheetByName('Config')) setup();
 
     if (action === 'vote') {
-        const sheet = ss.getSheetByName('Votos');
-        // data.options debe ser un array o string separado por comas
-        const choices = Array.isArray(data.options) ? data.options.join(',') : data.options;
-        sheet.appendRow([new Date(), data.user, choices]);
-        return responseJSON({ status: 'success', message: 'Voto registrado' });
+      const sheet = ss.getSheetByName('Votos');
+      // Asegurar que es string
+      const choices = Array.isArray(data.options) ? data.options.join(',') : (data.options || '');
+      sheet.appendRow([new Date(), data.user || 'Anon', choices]);
+      return responseJSON({ status: 'success' });
     }
-    
-    // --- ACCIONES DE ADMIN ---
-    
+
+    // ADMIN ACTIONS
     if (action === 'reset') {
-        const sheet = ss.getSheetByName('Votos');
-        // Borrar todo menos la cabecera
-        if (sheet.getLastRow() > 1) {
-          sheet.deleteRows(2, sheet.getLastRow() - 1);
-        }
-        return responseJSON({ status: 'success', message: 'Votos reseteados' });
+      const sheet = ss.getSheetByName('Votos');
+      if (sheet.getLastRow() > 1) sheet.deleteRows(2, sheet.getLastRow() - 1);
+      return responseJSON({ status: 'success' });
     }
 
     if (action === 'close') {
-        setVal('Config', 'voting_open', 'false');
-        return responseJSON({ status: 'success', message: 'Votación cerrada' });
+      setVal(ss, 'Config', 'voting_open', 'false');
+      return responseJSON({ status: 'success' });
     }
-    
+
     if (action === 'open') {
-        setVal('Config', 'voting_open', 'true');
-        return responseJSON({ status: 'success', message: 'Votación abierta' });
+      setVal(ss, 'Config', 'voting_open', 'true');
+      return responseJSON({ status: 'success' });
     }
 
     if (action === 'add_option') {
-        const sheet = ss.getSheetByName('Opciones');
-        const id = new Date().getTime(); // ID simple
-        sheet.appendRow([id, data.name, true]);
-        return responseJSON({ status: 'success', message: 'Opción añadida' });
-    }
-    
-    if (action === 'export_csv') {
-       // Devuelve los datos brutos para que el frontend genere el CSV
-       const sheet = ss.getSheetByName('Votos');
-       const data = sheet.getDataRange().getValues();
-       return responseJSON({ status: 'success', data: data });
+      const sheet = ss.getSheetByName('Opciones');
+      const id = new Date().getTime();
+      sheet.appendRow([id, data.name, true]);
+      return responseJSON({ status: 'success' });
     }
 
-    return responseJSON({ status: 'error', message: 'Acción desconocida' });
+    return responseJSON({ status: 'error', message: 'Action unknown' });
 
   } catch (err) {
     return responseJSON({ status: 'error', message: err.toString() });

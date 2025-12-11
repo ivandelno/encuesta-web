@@ -1,7 +1,7 @@
 // CONFIGURACIÓN
 // -------------------------------------------------------------------------
 // Pega aquí la URL de tu Google Apps Script cuando lo hayas desplegado
-const API_URL = "https://script.google.com/macros/s/AKfycby2vJjVEZBwjct9ySt-Fi1lklbA212bgmXzFjuZ5fXRILyjpp4826b3yiSdl5PAI6rZzQ/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbx27aIXgTaXJXhjiaisEkpmrb0P2bu5V4fsp-qxwt0n4ugz8mmLGYxrfMtzU4Lh11F4rA/exec";
 // -------------------------------------------------------------------------
 
 // STATE
