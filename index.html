@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -15,10 +16,11 @@
     <!-- Supabase SDK -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
 
     <div class="app-container">
-        
+
         <!-- Header -->
         <header>
             <h1>VOTACIÓN <span class="highlight">2025</span></h1>
@@ -37,13 +39,14 @@
         <!-- VIEW: VOTING AREA -->
         <section id="view-voting" class="view hidden">
             <div class="info-banner glass">
-                <p>Hola <span id="display-username" class="user-highlight"></span>, elige <strong>3 opciones</strong>:</p>
+                <p>Hola <span id="display-username" class="user-highlight"></span>, elige <strong>3 opciones</strong>:
+                </p>
                 <div class="counter"><span id="selected-count">0</span> / 3</div>
             </div>
 
             <div id="options-list" class="options-grid">
                 <!-- Options will be injected here via JS -->
-                 <div class="loading-spinner">Cargando opciones...</div>
+                <div class="loading-spinner">Cargando opciones...</div>
             </div>
 
             <div class="action-dock glass">
@@ -60,7 +63,7 @@
                 </div>
                 <div id="total-votes-display" class="total-badge">0 Votos Totales</div>
             </div>
-            
+
             <!-- Only visible if admin is logged in (handled by JS logic, but markup is here) -->
             <button id="btn-admin-back" class="btn-secondary hidden" style="margin-top: 20px;">Volver al Panel</button>
         </section>
@@ -76,12 +79,12 @@
             <!-- Tab: Votar (Simula la vista de usuario pero con extras) -->
             <div id="tab-vote" class="admin-tab active">
                 <div class="admin-controls glass">
-                   <h3>Panel de Control</h3>
-                   <div class="button-group">
-                       <button id="btn-export-counts" class="btn-small">📄 CSV (Resultados)</button>
-                       <button id="btn-export-details" class="btn-small">📑 CSV (Detallado)</button>
-                   </div>
-                   <button id="btn-go-to-voting" class="btn-secondary">Ir a Pantalla de Votación</button>
+                    <h3>Panel de Control</h3>
+                    <div class="button-group">
+                        <button id="btn-export-counts" class="btn-small">📄 CSV (Resultados)</button>
+                        <button id="btn-export-details" class="btn-small">📑 CSV (Detallado)</button>
+                    </div>
+                    <button id="btn-go-to-voting" class="btn-secondary">Ir a Pantalla de Votación</button>
                 </div>
             </div>
 
@@ -112,7 +115,9 @@
             <div class="card glass">
                 <h2>⛔ Votación Cerrada</h2>
                 <p>El administrador ha cerrado las votaciones.</p>
-                <button id="btn-view-results-anyway" class="btn-secondary">Ver Resultados Finales</button>
+                <!-- Oculto por defecto, solo admin lo verá -->
+                <button id="btn-view-results-anyway" class="btn-secondary hidden" style="margin-top: 15px;">Ver
+                    Resultados Finales (Admin)</button>
             </div>
         </section>
 
@@ -123,4 +128,5 @@
 
     <script src="app.js"></script>
 </body>
+
 </html>

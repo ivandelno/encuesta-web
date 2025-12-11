@@ -78,6 +78,15 @@ async function checkVotingStatusAndProceed() {
             showView('voting');
         } else {
             showView('closed');
+            // Logica para mostrar botón solo a admin
+            if (currentUser && currentUser.toLowerCase() === 'ivanadmindios') {
+                const btnResults = document.getElementById('btn-view-results-anyway');
+                btnResults.classList.remove('hidden');
+                btnResults.onclick = () => {
+                    showView('results');
+                    initResultsLoop();
+                };
+            }
         }
     } catch (e) {
         showToast("Error de conexión ❌");
