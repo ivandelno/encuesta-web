@@ -128,6 +128,7 @@ function doPost(e) {
     if (action === 'reset') {
       const sheet = ss.getSheetByName('Votos');
       if (sheet.getLastRow() > 1) sheet.deleteRows(2, sheet.getLastRow() - 1);
+      setVal(ss, 'Config', 'voting_open', 'true'); // AUTO-OPEN
       return responseJSON({ status: 'success' });
     }
 

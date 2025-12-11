@@ -67,6 +67,11 @@ ui.logout.addEventListener('click', () => {
     location.reload();
 });
 
+// Allow Enter key to trigger login
+ui.usernameInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') ui.btnLogin.click();
+});
+
 // --- VOTING LOGIC ---
 async function checkVotingStatusAndProceed() {
     try {
