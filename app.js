@@ -180,26 +180,45 @@ async function updateChart() {
         if (!resultsChart) {
             // First time render
             resultsChart = new Chart(ui.ctx, {
-                type: 'bar',
+                type: 'bar', // Tipo barra
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: '# Votos',
+                        label: 'Votos',
                         data: values,
-                        backgroundColor: 'rgba(255, 0, 128, 0.6)',
-                        borderColor: 'rgba(255, 0, 128, 1)',
+                        backgroundColor: 'rgba(0, 255, 136, 0.7)', // Verde success más visible
+                        borderColor: 'rgba(0, 255, 136, 1)',
                         borderWidth: 1,
-                        borderRadius: 5
+                        borderRadius: 4,
+                        barPercentage: 0.8,
+                        categoryPercentage: 0.9
                     }]
                 },
                 options: {
+                    indexAxis: 'y', // <--- ESTO LO HACE HORIZONTAL
                     responsive: true,
                     maintainAspectRatio: false,
                     scales: {
-                        y: { beginAtZero: true, ticks: { color: 'white' }, grid: { color: 'rgba(255,255,255,0.1)' } },
-                        x: { ticks: { color: 'white' }, grid: { display: false } }
+                        x: {
+                            beginAtZero: true,
+                            ticks: { color: 'white', precision: 0 },
+                            grid: { color: 'rgba(255,255,255,0.1)' }
+                        },
+                        y: {
+                            ticks: {
+                                color: 'white',
+                                font: { size: 11 }, // Letra un pelín más pequeña para que quepa todo
+                                autoSkip: false // Mostrar TODAS las etiquetas
+                            },
+                            grid: { display: false }
+                        }
                     },
-                    plugins: { legend: { display: false } }
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            bodyFont: { size: 14 }
+                        }
+                    }
                 }
             });
         } else {
